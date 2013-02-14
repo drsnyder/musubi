@@ -2,25 +2,27 @@
 
 (defprotocol Feature
   "A spam feature abstraction."
-  (id [feat])
-  (ham-score [feat])
-  (spam-score [feat]))
-
-(defprotocol SpamFeaturePersistance
-  (store [feat])
-  (inc-spam-score [feat])
-  (inc-ham-score [feat]))
+  (id [this])
+  (ham-score [this])
+  (inc-ham-score [this])
+  (spam-score [this])
+  (inc-spam-score [this]))
 
 
-(deftype SpamFeature [f ham-score spam-score]
+(extend clojure.lang.PersistentHashMap
   Feature
-  (id [feat] feat)
-  (ham-score [feat] ham-score)
-  (spam-score [feat] spam-score))
+  {:id             (fn [this] (:id this))
+   :ham-score      (fn [this] (:ham-score this))
+   :inc-ham-score  (fn [this] (update-in this [:ham-score] inc))
+   :spam-score     (fn [this] (:spam-score this))
+   :inc-spam-score (fn [this] (update-in this [:spam-score] inc))})
 
-(defn new-spam-feature 
-  ([feat ham-score spam-score]
-   (SpamFeature. feat ham-score spam-score))
-  ([feat]
-   (SpamFeature. feat 0 0)))
 
+(defn new-feature 
+  ([word ham-score spam-score]
+   (hash-map :id word :ham-score ham-score :spam-score spam-score))
+  ([id]
+   (new-feature id 0 0)))
+
+
+(defmulti persistance (fn [x & [y]] x))

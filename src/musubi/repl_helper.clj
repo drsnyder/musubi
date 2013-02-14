@@ -1,3 +1,7 @@
 (ns musubi.repl-helper
-  (:use [clojure.test]
-        [midje.repl]))
+  (:use 
+    [musubi.spam.feature]
+    [musubi.spam.feature.word]
+    [musubi.spam.feature.database.memory]
+    [clojure.test]
+    [midje.repl]))
