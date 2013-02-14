@@ -5,8 +5,15 @@
 
 (def training-db (atom {}))
 
+
+(defn total-spams []
+  (get @training-db :total-spams 0))
+
 (defn inc-spams []
   (swap! training-db update-in [:total-spams] (fnil inc 0)))
+
+(defn total-hams []
+  (get @training-db :total-hams 0))
 
 (defn inc-hams []
   (swap! training-db update-in [:total-hams] (fnil inc 0)))
@@ -43,4 +50,10 @@
 
 (defmethod persistance :spam [type] 
   (inc-spams))
+
+(defmethod persistance :total-spams [type]
+  (total-spams))
+
+(defmethod persistance :total-hams [type]
+  (total-hams))
 

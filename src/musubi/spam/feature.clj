@@ -19,7 +19,7 @@
 
 
 (defn new-feature 
-  ([word ham-score spam-score]
+  ([word spam-score ham-score]
    (hash-map :id word :ham-score ham-score :spam-score spam-score))
   ([id]
    (new-feature id 0 0)))
