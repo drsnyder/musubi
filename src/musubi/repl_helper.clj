@@ -2,6 +2,7 @@
   (:use 
     [musubi.spam.feature]
     [musubi.spam.feature.word]
-    [musubi.spam.feature.database.memory]
+    [musubi.spam.store]
+    [musubi.spam.store.memory]
     [clojure.test]
     [midje.repl]))
