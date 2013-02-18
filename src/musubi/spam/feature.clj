@@ -24,5 +24,3 @@
   ([id]
    (new-feature id 0 0)))
 
-
-(defmulti persistance (fn [x & [y]] x))

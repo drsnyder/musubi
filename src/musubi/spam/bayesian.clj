@@ -1,6 +1,8 @@
 (ns musubi.spam.bayesian
-  (:require [musubi.spam.feature :refer (spam-score ham-score inc-ham-score inc-spam-score)]
-    [musubi.spam.feature.word :refer (extract-features)]))
+  (:require (musubi.spam
+              [feature :refer :all]
+              [store :refer (store)])
+            [musubi.spam.feature.word :refer (extract-features)]))
 
 (def config (atom {:max-ham-score 0.4
                    :min-spam-score 0.6}))
@@ -17,17 +19,18 @@
   (classification (score (extract-features text))))
 
 (defn increment-count 
-  [type feature store]
+  [^:musubi.spam.store s type feature]
   (condp = type
-    :ham (store (inc-ham-score feature))
-    :spam (store (inc-spam-score feature))
-    feature))
+    :ham (store s (id feature) (inc-ham-score feature))
+    :spam (store s (id feature) (inc-spam-score feature))
+    nil))
 
-(defn train [type text persistance]
-  (when-let [features (map #(increment-count type % (partial persistance :store))
-                           (extract-features text persistance))]
-    (persistance type)
-    features))
+(defn train [^:musubi.spam.store s text type]
+  (let [features (map (partial increment-count s type)
+                           (extract-features s text))]
+    (if features
+      (inc-counter s (if (= type :spam) :total-spams :total-hams))
+      nil)))
 
 (defn spam-probability
   [feature total-spams total-hams]
@@ -38,8 +41,11 @@
 
 
 (defn bayesian-spam-probability 
-  [feature persistance &{:keys [assumed-probability weight] :or {assumed-probability 0.5 weight 1}}]
-  (let [basic-probability (spam-probability feature (persistance :total-spams) (persistance :total-hams))
+  [^:musubi.spam.store s feature 
+   &{:keys [assumed-probability weight] :or {assumed-probability 0.5 weight 1}}]
+  (let [basic-probability (spam-probability feature 
+                                            (get-counter s :total-spams) 
+                                            (get-counter s :total-hams))
         data-points (+ (spam-score feature) (ham-score feature))]
     (/ (+ (* weight assumed-probability)
           (* data-points basic-probability))
