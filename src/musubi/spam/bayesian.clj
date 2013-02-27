@@ -86,8 +86,10 @@
     (/ (+ (- 1 h) s) 2.0)))
 
 (defn score 
-  [^:musubi.spam.store s text]
-  (features->score (extract-features s text) (get-totals s :spam) (get-totals s :ham)))
+  [^:musubi.spam.store s ^:String text]
+  (try
+    (features->score (extract-features s text) (get-totals s :spam) (get-totals s :ham))
+  (catch java.lang.Exception e (println e))))
 
 (declare inverse-chi-square)
 
